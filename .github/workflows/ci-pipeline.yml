@@ -1,0 +1,40 @@
+name: CI Pipeline
+
+# Trigger: Run this pipeline when code is pushed to the 'main' branch
+# or when a Pull Request is opened against 'main'.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest # The "server" GitHub provides for us
+
+    steps:
+      # Step 1: Check out the code from the repo
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      # Step 3: Install dependencies
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+
+      # Step 4: Run Unit Tests
+      - name: Run Tests
+        run: |
+          pytest test_app.py
+
+      # Step 5: Build Docker Image (to prove it builds correctly)
+      - name: Build Docker Image
+        run: |
+          docker build -t my-app:${{ github.sha }} .
+          echo "Docker Image built successfully!"
