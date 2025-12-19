@@ -1,7 +1,5 @@
 name: CI Pipeline
 
-# Trigger: Run this pipeline when code is pushed to the 'main' branch
-# or when a Pull Request is opened against 'main'.
 on:
   push:
     branches: [main]
@@ -9,32 +7,41 @@ on:
     branches: [main]
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest # The "server" GitHub provides for us
+  build-and-push:
+    runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Check out the code from the repo
+      # Step 1: Checkout Code
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Step 2: Set up Python environment
+      # Step 2: Set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
 
-      # Step 3: Install dependencies
+      # Step 3: Install Dependencies
       - name: Install Dependencies
-        run: |
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
-      # Step 4: Run Unit Tests
+      # Step 4: Run Tests
       - name: Run Tests
-        run: |
-          pytest test_app.py
+        run: pytest test_app.py
 
-      # Step 5: Build Docker Image (to prove it builds correctly)
-      - name: Build Docker Image
+      # Step 5: Authenticate to Google Cloud
+      # Ensure you have added 'GCP_SA_KEY' in GitHub Settings -> Secrets -> Actions
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_ARTIFACT_SA_KEY }}
+
+      # Step 6: Configure Docker to use Google's Registry
+      - name: Configure Docker for GCP
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev
+
+      # Step 7: Build and Push with YOUR specific path
+      - name: Build and Push to GCP Artifact Registry
         run: |
-          docker build -t my-app:${{ github.sha }} .
-          echo "Docker Image built successfully!"
+          docker build -t us-central1-docker.pkg.dev/ci-cd-learning-481620/my-repo/my-app:${{ github.sha }} .
+          docker push us-central1-docker.pkg.dev/ci-cd-learning-481620/my-repo/my-app:${{ github.sha }}
