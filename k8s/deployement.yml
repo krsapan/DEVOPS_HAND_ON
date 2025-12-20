@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: my-app-container
-          image: us-central1-docker.pkg.dev/ci-cd-learning-481620/my-repo/my-app:latest
+          image: us-central1-docker.pkg.dev/ci-cd-learning-481620/my-repo/my-app:bb645a67b526e1acdc54fa84d1ee2f1fdb805ab2
           ports:
             - containerPort: 5000
